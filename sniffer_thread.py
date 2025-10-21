@@ -16,10 +16,18 @@ class SnifferThread(QThread):
         super().__init__(parent)
         self._stop_event = threading.Event()
         self._interface: Optional[str] = None
+        self._capture_filter: Optional[str] = None
 
     def set_interface(self, interface: Optional[str]) -> None:
         """Configure the network interface that will be sniffed."""
         self._interface = interface
+
+    def set_capture_filter(self, capture_filter: Optional[str]) -> None:
+        """Set a BPF capture filter that will be passed to scapy.sniff."""
+        if capture_filter:
+            self._capture_filter = capture_filter
+        else:
+            self._capture_filter = None
 
     def stop_sniffing(self) -> None:
         """Signal the sniffer loop to stop."""
@@ -43,4 +51,5 @@ class SnifferThread(QThread):
                 store=False,
                 stop_filter=_should_stop,
                 timeout=1,
+                filter=self._capture_filter,
             )
